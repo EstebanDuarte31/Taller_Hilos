@@ -1,0 +1,100 @@
+
+
+[
+  {
+
+    "source": "China",
+    "targets": [
+      {
+        "target": "Estados Unidos",
+        "distance":48448,
+        "value":29832
+      },
+      {
+        "target": "Australia",
+        "distance": 8956,
+        "value": 34396
+      },
+      {
+        "target": "Canada",
+        "distance": 3484,
+        "value": 74562
+      },
+      {
+        "target": "Brasil",
+        "distance": 3483,
+        "value": 23778
+      }
+    ]
+  },
+  {
+    "source":"Alemania",
+    "targets":[
+      {
+        "target":"Bogotá",
+        "distance":8007,
+        "value":1800000
+      },
+      {
+        "target":"Paris",
+        "distance":1268,
+        "value":780000
+      },
+      {
+        "target": "Brasil",
+        "distance": 3483,
+        "value": 38940
+      },
+      {
+        "target": "Mexico",
+        "distance": 3483,
+        "value": 38940
+      }
+    ]
+  },
+  {
+    "source":"Medellin",
+    "targets":[
+      {
+        "target":"Madrid",
+        "distance":1268,
+        "value":680000
+      }
+    ]
+  },
+  {
+    "source":"Boyacá",
+    "targets":[
+      {
+        "target":"Bogotá",
+        "distance":178,
+        "value":800000
+      },
+      {
+        "target":"Paris",
+        "distance":1267,
+        "value":280000
+      },
+      {
+        "target":"Santiago de Chile",
+        "distance":2462,
+        "value":75000
+      }
+    ]
+  },
+  {
+    "source":"Perú",
+    "targets":[
+      {
+        "target":"Bogotá",
+        "distance":4248,
+        "value":1200000
+      },
+      {
+        "target":"Lima",
+        "distance":2462,
+        "value":700000
+      }
+    ]
+  }
+]

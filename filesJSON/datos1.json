@@ -1,0 +1,91 @@
+[
+  {"source": "Colombia",
+    "targets": [
+      {
+        "target": "Estados Unidos",
+        "distance": 4248,
+        "value": 1200000
+      },
+      {
+        "target": "Alemania",
+        "distance": 2462,
+        "value": 700000
+      },
+      {
+        "target": "Rusia",
+        "distance": 3484,
+        "value": 74562
+      }
+    ]
+  },
+  {
+    "source":"Australia",
+    "targets":[
+      {
+        "target":"Bogotá",
+        "distance":8007,
+        "value":1800000
+      },
+      {
+        "target":"Paris",
+        "distance":1268,
+        "value":780000
+      },
+      {
+        "target": "Brasil",
+        "distance": 3483,
+        "value": 38940
+      },
+      {
+        "target": "Mexico",
+        "distance": 3483,
+        "value": 38940
+      }
+    ]
+  },
+  {
+    "source":"España",
+    "targets":[
+      {
+        "target":"Madrid",
+        "distance":1268,
+        "value":680000
+      }
+    ]
+  },
+  {
+    "source":"Canada",
+    "targets":[
+      {
+        "target":"Bogotá",
+        "distance":1878,
+        "value":800000
+      },
+      {
+        "target":"Paris",
+        "distance":10267,
+        "value":2800000
+      },
+      {
+        "target":"Santiago de Chile",
+        "distance":2462,
+        "value":750000
+      }
+    ]
+  },
+  {
+    "source":"Perú",
+    "targets":[
+      {
+        "target":"Bogotá",
+        "distance":4248,
+        "value":1200000
+      },
+      {
+        "target":"Lima",
+        "distance":2462,
+        "value":700000
+      }
+    ]
+  }
+]
