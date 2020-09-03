@@ -1,0 +1,58 @@
+import Logic.*;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseMultigraph;
+
+import java.util.ArrayList;
+
+public class Run {
+ReadJson readJson;
+    ArrayList<Node<Origen>> arrayListOrigen;
+    ArrayList<ArrayList<Node<Destination>>> arrayListDestination;
+
+
+
+    public Run() {
+        readJson = new ReadJson("filesJSON\\datos.json");
+        readJson.start();
+
+        new Thread(()->{
+            boolean state=true;
+            while (state){
+                if (readJson.isAlive() == false) {
+                    arrayListOrigen = readJson.getArrayListOrigen();
+                    state = false;
+
+                } else {
+                    System.out.println("vivo");
+                }
+            }
+
+        }).start();
+
+    }
+
+    public void gra(){
+
+        System.out.println(arrayListOrigen.size());
+        System.out.println("primero");
+    }
+
+    public static void main(String[] args) {
+
+        Graph<Node, Distance> graph = new SparseMultigraph<Node, Distance>();
+
+Run r=new Run();
+
+//        ReadJson readJson1 = new ReadJson("filesJSON\\datos1.json");
+//        ReadJson readJson2 = new ReadJson("filesJSON\\datos2.json");
+
+
+
+
+
+//arrayListDestination=readJson.getArrayListDestination();
+
+
+    }
+}
+
