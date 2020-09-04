@@ -1,0 +1,115 @@
+import Logic.*;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.graph.util.EdgeType;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+
+public class Runner {
+    ReadJson readJson;
+    ReadJson readJson1;
+    ReadJson readJson2;
+    ArrayList<Node<Origen>> arrayListOrigen;
+    ArrayList<ArrayList<Node<Destination>>> arrayListDestination;
+    Graph<Node, Distance> graph = new SparseMultigraph<Node, Distance>();
+
+    public Runner() {
+
+        arrayListOrigen = new ArrayList<Node<Origen>>();
+        arrayListDestination = new ArrayList<ArrayList<Node<Destination>>>();
+
+        readJson = new ReadJson("filesJSON\\datos.json");
+        readJson.start();
+        readJson1 = new ReadJson("filesJSON\\datos1.json");
+        readJson1.start();
+        readJson2 = new ReadJson("filesJSON\\datos2.json");
+        readJson2.start();
+
+        Thread op = new Thread(() -> {
+            boolean state = true;
+            while (state) {
+                if (readJson.isAlive() == false&&readJson1.isAlive() == false&&readJson2.isAlive() == false) {
+                    arrayListOrigen.addAll(readJson.getArrayListOrigen());
+                    arrayListOrigen.addAll(readJson1.getArrayListOrigen());
+                    arrayListOrigen.addAll(readJson2.getArrayListOrigen());
+
+                    arrayListDestination.addAll(readJson.getArrayListDestination());
+                    arrayListDestination.addAll(readJson1.getArrayListDestination());
+                    arrayListDestination.addAll(readJson2.getArrayListDestination());
+
+
+                    for (int i = 0; i < arrayListOrigen.size(); i++) {
+
+                        if (repeat(arrayListOrigen.get(i)) == false) {
+//                          añade un   VERTICE (origenes)
+                            graph.addVertex(arrayListOrigen.get(i));
+                        }
+
+//                            MOTRAR ORGENES
+                        System.out.println("-" + arrayListOrigen.get(i));
+
+
+                        for (Node<Destination> p : arrayListDestination.get(i)) {
+                            Node<Destination> pe=repeatDestino(p);
+
+                            if(pe==null){
+//                          añade un   VERTICE (Destinos)
+                                graph.addVertex(p);
+                                graph.addEdge(new Distance(30, arrayListOrigen.get(i).toString()+","+p), arrayListOrigen.get(i), p, EdgeType.DIRECTED);
+                            }else {
+                                graph.addEdge(new Distance(30, arrayListOrigen.get(i).toString()+","+p), arrayListOrigen.get(i), pe, EdgeType.DIRECTED);
+                            }
+
+
+                            System.out.println("*" + p + " \n");
+                        }
+
+
+                    }
+                    System.out.println(graph);
+
+                    state = false;
+
+                } else {
+                    System.out.println("vivo");
+                }
+            }
+
+        });
+        op.start();
+
+
+    }
+
+    private Node repeatDestino(Node<Destination> p) {
+        Collection<Node> k = graph.getVertices();
+
+        for (Node o : k) {
+            if (o.getId().equals(p.getId())){
+                return o;
+            }
+        }
+
+        return null;
+    }
+
+
+    public boolean repeat(Node<Origen> origenNode) {
+        Collection<Node> k = graph.getVertices();
+        for (Node o : k) {
+            if (o.getId().equals(origenNode.getId())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+
+        Runner r = new Runner();
+
+    }
+}
