@@ -1,12 +1,11 @@
 import Logic.*;
+import edu.uci.ics.jung.algorithms.shortestpath.DijkstraShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
+import org.apache.commons.collections15.Transformer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 
 public class Runner {
     ReadJson readJson;
@@ -14,13 +13,21 @@ public class Runner {
     ReadJson readJson2;
     ArrayList<Node<Origen>> arrayListOrigen;
     ArrayList<ArrayList<Node<Destination>>> arrayListDestination;
+    ArrayList<Node<Destination>> Array_destino;
+
     Graph<Node, Distance> graph = new SparseMultigraph<Node, Distance>();
+    Graph<Node, Value> graphValue = new SparseMultigraph<Node, Value>();
+    Graph<Node, Escalas> graphEscalas = new SparseMultigraph<Node, Escalas>();
+
+    ArrayList<String> des = new ArrayList<String>();
 
     public Runner() {
 
         arrayListOrigen = new ArrayList<Node<Origen>>();
         arrayListDestination = new ArrayList<ArrayList<Node<Destination>>>();
+        Array_destino = new ArrayList<Node<Destination>>();
 
+//        SE INICIAN LOS HILOS PARA LA LECTURA DE LOS .JSON
         readJson = new ReadJson("filesJSON\\datos.json");
         readJson.start();
         readJson1 = new ReadJson("filesJSON\\datos1.json");
@@ -28,10 +35,12 @@ public class Runner {
         readJson2 = new ReadJson("filesJSON\\datos2.json");
         readJson2.start();
 
-        Thread op = new Thread(() -> {
+
+//SE CREA ESTE HILO QUE ESTARÁ ATENTO PARA CUENDO LA LECTORA DE LOS JSON SE HAYA COPLETADO
+        Thread thread_graphs = new Thread(() -> {
             boolean state = true;
             while (state) {
-                if (readJson.isAlive() == false&&readJson1.isAlive() == false&&readJson2.isAlive() == false) {
+                if (readJson.isAlive() == false && readJson1.isAlive() == false && readJson2.isAlive() == false) {
                     arrayListOrigen.addAll(readJson.getArrayListOrigen());
                     arrayListOrigen.addAll(readJson1.getArrayListOrigen());
                     arrayListOrigen.addAll(readJson2.getArrayListOrigen());
@@ -42,45 +51,42 @@ public class Runner {
 
 
                     for (int i = 0; i < arrayListOrigen.size(); i++) {
-
-                        if (repeat(arrayListOrigen.get(i)) == false) {
-//                          añade un   VERTICE (origenes)
-                            graph.addVertex(arrayListOrigen.get(i));
-                        }
-
-//                            MOTRAR ORGENES
-                        System.out.println("-" + arrayListOrigen.get(i));
-
+                        Node<Origen> or = repeat(arrayListOrigen.get(i));
+                        //                            MOTRAR ORGENES
+                        System.out.print("-" + arrayListOrigen.get(i));
 
                         for (Node<Destination> p : arrayListDestination.get(i)) {
-                            Node<Destination> pe=repeatDestino(p);
 
-                            if(pe==null){
-//                          añade un   VERTICE (Destinos)
-                                graph.addVertex(p);
-                                graph.addEdge(new Distance(30, arrayListOrigen.get(i).toString()+","+p), arrayListOrigen.get(i), p, EdgeType.DIRECTED);
-                            }else {
-                                graph.addEdge(new Distance(30, arrayListOrigen.get(i).toString()+","+p), arrayListOrigen.get(i), pe, EdgeType.DIRECTED);
-                            }
-
+//                                CREA EL ENLACE
+                            Node<Destination> dt = repeatDestino(p);
+                            graph.addEdge(new Distance(p.getInfo().getDistance(), arrayListOrigen.get(i).toString() + "," + p), or, dt, EdgeType.DIRECTED);
+                            graphValue.addEdge(new Value(p.getInfo().getValue(), arrayListOrigen.get(i).toString() + "," + p), or, dt, EdgeType.DIRECTED);
+                            graphEscalas.addEdge(new Escalas(1, arrayListOrigen.get(i).toString() + "," + p), or, dt, EdgeType.DIRECTED);
 
                             System.out.println("*" + p + " \n");
                         }
-
-
                     }
-                    System.out.println(graph);
 
+                    System.out.println(graph);
                     state = false;
 
-                } else {
-                    System.out.println("vivo");
                 }
+//                else {
+//                    System.out.println("sigue vivo");
+//                }
             }
 
         });
-        op.start();
+        thread_graphs.start();
 
+
+        boolean state = true;
+        while (state) {
+            if (thread_graphs.isAlive() == false) {
+                interfaz();
+                state = false;
+            }
+        }
 
     }
 
@@ -88,28 +94,166 @@ public class Runner {
         Collection<Node> k = graph.getVertices();
 
         for (Node o : k) {
-            if (o.getId().equals(p.getId())){
+            if (o.getId().equals(p.getId())) {
                 return o;
             }
         }
-
-        return null;
+        //                          añade un   VERTICE (Destinos)
+        graph.addVertex(p);
+        graphValue.addVertex(p);
+        graphEscalas.addVertex(p);
+        Array_destino.add(p);
+//        array para luego mostrar Todos lo DESTINOS
+        return p;
     }
 
 
-    public boolean repeat(Node<Origen> origenNode) {
+    public Node repeat(Node<Origen> origenNode) {
         Collection<Node> k = graph.getVertices();
         for (Node o : k) {
-            if (o.getId().equals(origenNode.getId())){
-                return true;
+            if (o.getId().equals(origenNode.getId())) {
+                return o;
             }
         }
-        return false;
+//        añade un   VERTICE (origenes)
+        graph.addVertex(origenNode);
+        graphValue.addVertex(origenNode);
+        graphEscalas.addVertex(origenNode);
+        return origenNode;
     }
+
+    //    EN ESTE METODO DEJO TODO LO NECESARIO PARA QUE PUEDA CONESTAR LA LOGICA Y LA INTERFAZ RÁPIDAMENTE
+    public void interfaz() {
+//        DE ESTA FORMA PUEDE SACAR LOS ORIGENES Y DESTINOS
+        int i = 0;
+        System.out.println("sel. Origen");
+        for (Node<Origen> p : arrayListOrigen) {
+            System.out.println(i + ") " + p.getId());
+            i++;
+        }
+        i = 0;
+        System.out.println("\n\nsel. Destino");
+        for (Node<Destination> ui : Array_destino) {
+            System.out.println(i + ")" + ui);
+            i++;
+        }
+
+
+//        suponiendo que se haya escogido el origen Colombia y el destino Wakanda
+        cotaRoute("Colombia", "Wakanda");
+        cotaRouteporPrecio("Colombia", "Wakanda");
+        cotaRouteporEcalas("Colombia", "Wakanda");
+
+
+    }
+
+    public void cotaRoute(String origen, String destino) {
+        Transformer<Distance, Double> wtTransformer = new Transformer<Distance, Double>() {
+            @Override
+            public Double transform(Distance link) {
+                return link.getDistance();
+            }
+        };
+        DijkstraShortestPath<Node, Distance> alg = new DijkstraShortestPath(graph, wtTransformer);
+
+
+        System.out.println("-- " + graph.toString());
+        int posOr = -1, w = -1;
+        for (int i = 0; i < arrayListOrigen.size(); i++) {
+            if (arrayListOrigen.get(i).getId().equals(origen)) {
+                posOr = i;
+            }
+        }
+        for (int j = 0; j < Array_destino.size(); j++) {
+            if (Array_destino.get(j).getId().equals(destino)) {
+                w = j;
+            }
+        }
+        List<Distance> l = alg.getPath(arrayListOrigen.get(posOr), Array_destino.get(w));
+        Number dist = alg.getDistance(arrayListOrigen.get(posOr), Array_destino.get(w));
+        System.out.println();
+        System.out.println("La distancia mas corta de " + arrayListOrigen.get(posOr) + " a " + Array_destino.get(w) + " es:");
+        System.out.println(l.toString());
+        System.out.println("Y la distancia total es: " + dist);
+
+    }
+
+   public void cotaRouteporPrecio(String origen, String destino) {
+        Transformer<Value, Double> wtTransformer = new Transformer<Value, Double>() {
+            @Override
+            public Double transform(Value link) {
+
+                return link.getValue();
+            }
+        };
+        DijkstraShortestPath<Node, Value> alg = new DijkstraShortestPath(graphValue, wtTransformer);
+
+
+        System.out.println("-- " + graphValue.toString());
+        int posOr = -1, w = -1;
+        for (int i = 0; i < arrayListOrigen.size(); i++) {
+            if (arrayListOrigen.get(i).getId().equals(origen)) {
+                posOr = i;
+            }
+        }
+        for (int j = 0; j < Array_destino.size(); j++) {
+            if (Array_destino.get(j).getId().equals(destino)) {
+                w = j;
+            }
+        }
+        List<Value> l = alg.getPath(arrayListOrigen.get(posOr), Array_destino.get(w));
+        Number dist = alg.getDistance(arrayListOrigen.get(posOr), Array_destino.get(w));
+        System.out.println();
+        System.out.println("La ruta más economica (barata) " + arrayListOrigen.get(posOr) + " a " + Array_destino.get(w) + " es:");
+        System.out.println(l.toString());
+        System.out.println("Y el precio total es: $" + dist + "  cop");
+
+
+
+    }
+
+    public void cotaRouteporEcalas(String origen, String destino) {
+        Transformer<Escalas, Integer> wtTransformer = new Transformer<Escalas, Integer>() {
+            @Override
+            public Integer transform(Escalas link) {
+
+                return link.getEscalas();
+            }
+        };
+        DijkstraShortestPath<Node, Escalas> alg = new DijkstraShortestPath(graphEscalas, wtTransformer);
+
+
+
+        System.out.println("-- " + graphEscalas.toString());
+        int posOr = -1, w = -1;
+        for (int i = 0; i < arrayListOrigen.size(); i++) {
+            if (arrayListOrigen.get(i).getId().equals(origen)) {
+                posOr = i;
+            }
+        }
+        for (int j = 0; j < Array_destino.size(); j++) {
+            if (Array_destino.get(j).getId().equals(destino)) {
+                w = j;
+            }
+        }
+        List<Escalas> l = alg.getPath(arrayListOrigen.get(posOr), Array_destino.get(w));
+        Number dist = alg.getDistance(arrayListOrigen.get(posOr), Array_destino.get(w));
+        System.out.println();
+        System.out.println("La ruta con menos escalas  de " + arrayListOrigen.get(posOr) + " a " + Array_destino.get(w) + " es:");
+        System.out.println(l.toString());
+        System.out.println("en total hay " + dist + "  escalas");
+
+
+
+    }
+
+
+
 
     public static void main(String[] args) {
 
         Runner r = new Runner();
+
 
     }
 }
