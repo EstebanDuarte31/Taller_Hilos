@@ -13,19 +13,20 @@ public class Runner {
     ReadJson readJson2;
     ArrayList<Node<Origen>> arrayListOrigen;
     ArrayList<ArrayList<Node<Destination>>> arrayListDestination;
-    ArrayList<Node<Destination>> Array_destino;
+    ArrayList<Node<Destination>> array_destino;
+    ArrayList<Node<Origen>> array_Origin;
 
     Graph<Node, Distance> graph = new SparseMultigraph<Node, Distance>();
     Graph<Node, Value> graphValue = new SparseMultigraph<Node, Value>();
     Graph<Node, Escalas> graphEscalas = new SparseMultigraph<Node, Escalas>();
 
-    ArrayList<String> des = new ArrayList<String>();
 
     public Runner() {
 
         arrayListOrigen = new ArrayList<Node<Origen>>();
         arrayListDestination = new ArrayList<ArrayList<Node<Destination>>>();
-        Array_destino = new ArrayList<Node<Destination>>();
+        array_destino = new ArrayList<Node<Destination>>();
+        array_Origin = new ArrayList<Node<Origen>>();
 
 //        SE INICIAN LOS HILOS PARA LA LECTURA DE LOS .JSON
         readJson = new ReadJson("filesJSON\\datos.json");
@@ -36,7 +37,7 @@ public class Runner {
         readJson2.start();
 
 
-//SE CREA ESTE HILO QUE ESTARÁ ATENTO PARA CUENDO LA LECTORA DE LOS JSON SE HAYA COPLETADO
+//SE CREA ESTE HILO QUE ESTARÁ ATENTO PARA CUENDO LA LECTURA DE LOS JSON SE HAYA COPLETADO
         Thread thread_graphs = new Thread(() -> {
             boolean state = true;
             while (state) {
@@ -53,7 +54,9 @@ public class Runner {
                     for (int i = 0; i < arrayListOrigen.size(); i++) {
                         Node<Origen> or = repeat(arrayListOrigen.get(i));
                         //                            MOTRAR ORGENES
-                        System.out.print("-" + arrayListOrigen.get(i));
+
+
+                        System.out.println("-" + arrayListOrigen.get(i));
 
                         for (Node<Destination> p : arrayListDestination.get(i)) {
 
@@ -95,6 +98,16 @@ public class Runner {
 
         for (Node o : k) {
             if (o.getId().equals(p.getId())) {
+                boolean state=true;
+                for (Node d : array_destino) {
+
+                    if (d.getId().equals(p.getId())){
+                        state=false;
+                    }
+                }
+                if (state){
+                    array_destino.add(o);
+                }
                 return o;
             }
         }
@@ -102,7 +115,7 @@ public class Runner {
         graph.addVertex(p);
         graphValue.addVertex(p);
         graphEscalas.addVertex(p);
-        Array_destino.add(p);
+        array_destino.add(p);
 //        array para luego mostrar Todos lo DESTINOS
         return p;
     }
@@ -112,6 +125,15 @@ public class Runner {
         Collection<Node> k = graph.getVertices();
         for (Node o : k) {
             if (o.getId().equals(origenNode.getId())) {
+                boolean state = true;
+                for (Node d : array_Origin) {
+                    if (d.getId().equals(origenNode.getId())) {
+                        state = false;
+                    }
+                }
+                if (state) {
+                    array_Origin.add(o);
+                }
                 return o;
             }
         }
@@ -119,21 +141,26 @@ public class Runner {
         graph.addVertex(origenNode);
         graphValue.addVertex(origenNode);
         graphEscalas.addVertex(origenNode);
+        array_Origin.add(origenNode);
         return origenNode;
     }
 
     //    EN ESTE METODO DEJO TODO LO NECESARIO PARA QUE PUEDA CONESTAR LA LOGICA Y LA INTERFAZ RÁPIDAMENTE
     public void interfaz() {
+
 //        DE ESTA FORMA PUEDE SACAR LOS ORIGENES Y DESTINOS
         int i = 0;
+        String cityOrigin = "";
         System.out.println("sel. Origen");
-        for (Node<Origen> p : arrayListOrigen) {
+        for (Node<Origen> p : array_Origin) {
             System.out.println(i + ") " + p.getId());
+            cityOrigin = p.getId();
             i++;
         }
+
         i = 0;
         System.out.println("\n\nsel. Destino");
-        for (Node<Destination> ui : Array_destino) {
+        for (Node<Destination> ui : array_destino) {
             System.out.println(i + ")" + ui);
             i++;
         }
@@ -147,7 +174,7 @@ public class Runner {
 
     }
 
-    public void cotaRoute(String origen, String destino) {
+    public <T> ArrayList<T> cotaRoute(String origen, String destino) {
         Transformer<Distance, Double> wtTransformer = new Transformer<Distance, Double>() {
             @Override
             public Double transform(Distance link) {
@@ -159,26 +186,34 @@ public class Runner {
 
         System.out.println("-- " + graph.toString());
         int posOr = -1, w = -1;
-        for (int i = 0; i < arrayListOrigen.size(); i++) {
-            if (arrayListOrigen.get(i).getId().equals(origen)) {
+        for (int i = 0; i < array_Origin.size(); i++) {
+            if (array_Origin.get(i).getId().equals(origen)) {
                 posOr = i;
             }
         }
-        for (int j = 0; j < Array_destino.size(); j++) {
-            if (Array_destino.get(j).getId().equals(destino)) {
+        for (int j = 0; j < array_destino.size(); j++) {
+            if (array_destino.get(j).getId().equals(destino)) {
                 w = j;
             }
         }
-        List<Distance> l = alg.getPath(arrayListOrigen.get(posOr), Array_destino.get(w));
-        Number dist = alg.getDistance(arrayListOrigen.get(posOr), Array_destino.get(w));
+        List<Distance> l = alg.getPath(array_Origin.get(posOr), array_destino.get(w));
+        Number dist = alg.getDistance(array_Origin.get(posOr), array_destino.get(w));
         System.out.println();
-        System.out.println("La distancia mas corta de " + arrayListOrigen.get(posOr) + " a " + Array_destino.get(w) + " es:");
+        System.out.println("La distancia mas corta de " + array_Origin.get(posOr) + " a " + array_destino.get(w) + " es:");
         System.out.println(l.toString());
         System.out.println("Y la distancia total es: " + dist);
 
+        ArrayList<T> retorno = new ArrayList<>();
+
+        if (l.isEmpty() || dist.equals("")) {
+        } else {
+            retorno.add((T) l);
+            retorno.add((T) dist);
+        }
+        return retorno;
     }
 
-   public void cotaRouteporPrecio(String origen, String destino) {
+    public <T> ArrayList<T> cotaRouteporPrecio(String origen, String destino) {
         Transformer<Value, Double> wtTransformer = new Transformer<Value, Double>() {
             @Override
             public Double transform(Value link) {
@@ -191,28 +226,35 @@ public class Runner {
 
         System.out.println("-- " + graphValue.toString());
         int posOr = -1, w = -1;
-        for (int i = 0; i < arrayListOrigen.size(); i++) {
-            if (arrayListOrigen.get(i).getId().equals(origen)) {
+        for (int i = 0; i < array_Origin.size(); i++) {
+            if (array_Origin.get(i).getId().equals(origen)) {
                 posOr = i;
             }
         }
-        for (int j = 0; j < Array_destino.size(); j++) {
-            if (Array_destino.get(j).getId().equals(destino)) {
+        for (int j = 0; j < array_destino.size(); j++) {
+            if (array_destino.get(j).getId().equals(destino)) {
                 w = j;
             }
         }
-        List<Value> l = alg.getPath(arrayListOrigen.get(posOr), Array_destino.get(w));
-        Number dist = alg.getDistance(arrayListOrigen.get(posOr), Array_destino.get(w));
+        List<Value> l = alg.getPath(array_Origin.get(posOr), array_destino.get(w));
+        Number dist = alg.getDistance(array_Origin.get(posOr), array_destino.get(w));
         System.out.println();
-        System.out.println("La ruta más economica (barata) " + arrayListOrigen.get(posOr) + " a " + Array_destino.get(w) + " es:");
+        System.out.println("La ruta más economica (barata) " + array_Origin.get(posOr) + " a " + array_destino.get(w) + " es:");
         System.out.println(l.toString());
         System.out.println("Y el precio total es: $" + dist + "  cop");
 
 
+        ArrayList<T> retorno = new ArrayList<>();
 
+        if (l.isEmpty() || dist.equals("")) {
+        } else {
+            retorno.add((T) l);
+            retorno.add((T) dist);
+        }
+        return retorno;
     }
 
-    public void cotaRouteporEcalas(String origen, String destino) {
+    public <T> ArrayList<T> cotaRouteporEcalas(String origen, String destino) {
         Transformer<Escalas, Integer> wtTransformer = new Transformer<Escalas, Integer>() {
             @Override
             public Integer transform(Escalas link) {
@@ -223,37 +265,39 @@ public class Runner {
         DijkstraShortestPath<Node, Escalas> alg = new DijkstraShortestPath(graphEscalas, wtTransformer);
 
 
-
         System.out.println("-- " + graphEscalas.toString());
         int posOr = -1, w = -1;
-        for (int i = 0; i < arrayListOrigen.size(); i++) {
-            if (arrayListOrigen.get(i).getId().equals(origen)) {
+        for (int i = 0; i < array_Origin.size(); i++) {
+            if (array_Origin.get(i).getId().equals(origen)) {
                 posOr = i;
             }
         }
-        for (int j = 0; j < Array_destino.size(); j++) {
-            if (Array_destino.get(j).getId().equals(destino)) {
+        for (int j = 0; j < array_destino.size(); j++) {
+            if (array_destino.get(j).getId().equals(destino)) {
                 w = j;
             }
         }
-        List<Escalas> l = alg.getPath(arrayListOrigen.get(posOr), Array_destino.get(w));
-        Number dist = alg.getDistance(arrayListOrigen.get(posOr), Array_destino.get(w));
+        List<Escalas> l = alg.getPath(array_Origin.get(posOr), array_destino.get(w));
+        Number dist = alg.getDistance(array_Origin.get(posOr), array_destino.get(w));
         System.out.println();
-        System.out.println("La ruta con menos escalas  de " + arrayListOrigen.get(posOr) + " a " + Array_destino.get(w) + " es:");
+        System.out.println("La ruta con menos escalas  de " + array_Origin.get(posOr) + " a " + array_destino.get(w) + " es:");
         System.out.println(l.toString());
         System.out.println("en total hay " + dist + "  escalas");
 
+        ArrayList<T> retorno = new ArrayList<>();
 
-
+        if (l.isEmpty() || dist.equals("")) {
+        } else {
+            retorno.add((T) l);
+            retorno.add((T) dist);
+        }
+        return retorno;
     }
-
-
 
 
     public static void main(String[] args) {
 
         Runner r = new Runner();
-
 
     }
 }
